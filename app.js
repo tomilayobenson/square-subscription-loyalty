@@ -49,7 +49,7 @@ app.post('/', (req, res) => {
         .then(response => {
             //if there is no loyalty program
             console.log(response.data)
-            if (!response.data) {
+            if (!response) {
                 console.log('there is no loyalty program')
                 //fetch mapping phone number field of customer
                 fetch(`https://connect.squareupsandbox.com/v2/customers/${customer_id}`,
