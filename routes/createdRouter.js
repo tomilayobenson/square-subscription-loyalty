@@ -1,0 +1,175 @@
+const express = require('express')
+const cors = require('./cors')
+
+const createdRouter = express.Router()
+
+createdRouter.route('/')
+    .post('/', (req, res) => {
+        const customer_id = req.body.data.object.subscription.customer_id;
+        const customer_plan_id = req.body.data.object.subscription.plan_id;
+        const location_id = req.body.data.object.subscription.location_id;
+
+        const subscription_plan_id = process.env.SUBSCRIPTION_PLAN_ID
+        const loyalty_program_id = process.env.LOYALTY_PROGRAM_ID
+
+        console.log(`${customer_id} ${customer_plan_id} ${location_id}`)
+
+        //check if subscription plan is not the membership program
+        if (customer_plan_id !== subscription_plan_id) {
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'text/plain');
+            res.end("Not a membership program subscription");
+        }
+        //else check if customer has loyalty account
+        var myHeaders = {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${process.env.SECRET_KEY}`
+        };
+        var raw = JSON.stringify({
+            "query": {
+                "customer_ids": [
+                    customer_id
+                ]
+            }
+        });
+        var requestOptions = {
+            method: 'POST',
+            headers: myHeaders,
+            body: raw
+        };
+        fetch("https://connect.squareupsandbox.com/v2/loyalty/accounts/search", requestOptions)
+            .then(response => {
+                //if there is no loyalty program
+                console.log(response.data)
+                if (!response) {
+                    console.log('there is no loyalty program')
+                    //fetch mapping phone number field of customer
+                    fetch(`https://connect.squareupsandbox.com/v2/customers/${customer_id}`,
+                        {
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": `Bearer ${process.env.SECRET_KEY}`
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(result => {
+                            const phone_number = result.customer.phone_number
+                            var idempotency_key = uuidv4();
+                            const now = new Date();
+                            const isoString = now.toISOString();
+                            var myHeaders = {
+                                "Content-Type": "application/json",
+                                "Authorization": `Bearer ${process.env.SECRET_KEY}`
+                            };
+
+                            var raw = JSON.stringify({
+                                "idempotency_key": idempotency_key,
+                                "loyalty_account": {
+                                    "enrolled_at": isoString,
+                                    "customer_id": customer_id,
+                                    "program_id": loyalty_program_id,
+                                    "mapping": {
+                                        "phone_number": phone_number
+                                    }
+                                }
+                            });
+
+                            var requestOptions = {
+                                method: 'POST',
+                                headers: myHeaders,
+                                body: raw
+                            };
+                            //create loyalty account for customer
+                            fetch("https://connect.squareupsandbox.com/v2/loyalty/accounts", requestOptions)
+                                .then(response => response.json())
+                                .then(result => {
+                                    console.log(`the loyalty account created is: ${JSON.stringify(result)}`)
+                                    var account_id = result.loyalty_account.id;
+                                    console.log(account_id)
+                                    console.log(`account id is ${account_id}`)
+                                    var idempotency_key = uuidv4();
+                                    var myHeaders = {
+                                        "Content-Type": "application/json",
+                                        "Authorization": `Bearer ${process.env.SECRET_KEY}`
+                                    };
+
+                                    var raw = JSON.stringify({
+                                        "accumulate_points": {
+                                            "points": 29
+                                        },
+                                        "idempotency_key": idempotency_key,
+                                        "location_id": location_id
+                                    });
+
+                                    var requestOptions = {
+                                        method: 'POST',
+                                        headers: myHeaders,
+                                        body: raw
+                                    };
+                                    //accumulate loyalty points for customer
+                                    fetch(`https://connect.squareupsandbox.com/v2/loyalty/accounts/${account_id}/accumulate`, requestOptions)
+                                        .then(response => response.text())
+                                        .then(result => {
+                                            console.log(result)
+                                            res.statusCode = 200;
+                                            res.setHeader('Content-Type', 'text/plain');
+                                            res.end("29 points accumulated");
+                                        })
+                                        .catch(err => {
+                                            res.statusCode = 500
+                                            res.end(`there was a problem with points accumulation due to the following error: ${err}`)
+                                        });
+                                })
+                                .catch(err => {
+                                    res.statusCode = 500
+                                    res.end(`there was a problem creating new loyalty account fr customer due to the following error: ${err}`)
+                                });
+                        })
+                } else {
+                    response.json()
+                        .then(result => {
+                            console.log(`result is ${JSON.stringify(result)}`)
+                            var account_id = result.loyalty_accounts.find(account => account.program_id == loyalty_program_id).id
+                            console.log(`account id is ${account_id}`)
+                            var idempotency_key = uuidv4();
+                            var myHeaders = {
+                                "Content-Type": "application/json",
+                                "Authorization": `Bearer ${process.env.SECRET_KEY}`
+                            };
+
+                            var raw = JSON.stringify({
+                                "accumulate_points": {
+                                    "points": 29
+                                },
+                                "idempotency_key": idempotency_key,
+                                "location_id": location_id
+                            });
+
+                            var requestOptions = {
+                                method: 'POST',
+                                headers: myHeaders,
+                                body: raw
+                            };
+
+                            fetch(`https://connect.squareupsandbox.com/v2/loyalty/accounts/${account_id}/accumulate`, requestOptions)
+                                .then(response => response.text())
+                                .then(result => {
+                                    console.log(result)
+                                    res.statusCode = 200;
+                                    res.setHeader('Content-Type', 'text/plain');
+                                    res.end("29 points accumulated");
+                                })
+                                .catch(err => {
+                                    res.statusCode = 500
+                                    res.end(`there was a problem with points accumulation due to the following error: ${err}`)
+                                });
+                        })
+                }
+            })
+            .catch(err => {
+                res.statusCode = 500
+                res.end(`there was a problem with account search in loyalty programs due to the following error: ${err}`)
+            })
+    })
+
+module.exports = createdRouter

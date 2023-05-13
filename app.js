@@ -3,6 +3,8 @@ const morgan = require('morgan');
 const { v4: uuidv4 } = require('uuid');
 const fetch = require('node-fetch');
 require('dotenv').config()
+var createdRouter = require('./routes/createdRouter');
+var updatedRouter = require('./routes/updatedRouter');
 
 const hostname = 'localhost';
 const port = 3000;
@@ -11,6 +13,9 @@ const app = express()
 
 app.use(morgan('dev'))
 app.use(express.json())
+
+app.use('/created', createdRouter);
+app.use('/updated', updatedRouter);
 
 app.post('/', (req, res) => {
     const customer_id = req.body.data.object.subscription.customer_id;
