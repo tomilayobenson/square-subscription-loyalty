@@ -1,10 +1,11 @@
 const express = require('express')
+const { v4: uuidv4 } = require('uuid');
+const fetch = require('node-fetch');
 const cors = require('./cors')
-
 const updatedRouter = express.Router()
 
 updatedRouter.route('/')
-    .post('/', (req, res) => {
+    .post((req, res) => {
         const customer_id = req.body.data.object.invoice.primary_recipient.customer_id;
         const location_id = req.body.location_id;
 
@@ -58,10 +59,11 @@ updatedRouter.route('/')
                     body: raw
                 };
                 fetch("https://connect.squareupsandbox.com/v2/loyalty/accounts/search", requestOptions)
+                    .then(response => response.json())
                     .then(response => {
                         //if there is no loyalty program
-                        console.log(response.data)
-                        if (!response) {
+                        console.log("response.json is", response)
+                        if (!response.loyalty_accounts) {
                             console.log('there is no loyalty program')
                             //fetch mapping phone number field of customer
                             fetch(`https://connect.squareupsandbox.com/v2/customers/${customer_id}`,
@@ -73,6 +75,7 @@ updatedRouter.route('/')
                                 })
                                 .then(response => response.json())
                                 .then(result => {
+                                    console.log("customer details is: ", result)
                                     const phone_number = result.customer.phone_number
                                     var idempotency_key = uuidv4();
                                     const now = new Date();
@@ -146,44 +149,41 @@ updatedRouter.route('/')
                                         });
                                 })
                         } else {
-                            response.json()
+                            console.log(`result is ${JSON.stringify(response)}`)
+                            var account_id = response.loyalty_accounts.find(account => account.program_id == loyalty_program_id).id
+                            console.log(`account id is ${account_id}`)
+                            var idempotency_key = uuidv4();
+                            var myHeaders = {
+                                "Content-Type": "application/json",
+                                "Authorization": `Bearer ${process.env.SECRET_KEY}`
+                            };
+
+                            var raw = JSON.stringify({
+                                "accumulate_points": {
+                                    "points": 29
+                                },
+                                "idempotency_key": idempotency_key,
+                                "location_id": location_id
+                            });
+
+                            var requestOptions = {
+                                method: 'POST',
+                                headers: myHeaders,
+                                body: raw
+                            };
+
+                            fetch(`https://connect.squareupsandbox.com/v2/loyalty/accounts/${account_id}/accumulate`, requestOptions)
+                                .then(response => response.text())
                                 .then(result => {
-                                    console.log(`result is ${JSON.stringify(result)}`)
-                                    var account_id = result.loyalty_accounts.find(account => account.program_id == loyalty_program_id).id
-                                    console.log(`account id is ${account_id}`)
-                                    var idempotency_key = uuidv4();
-                                    var myHeaders = {
-                                        "Content-Type": "application/json",
-                                        "Authorization": `Bearer ${process.env.SECRET_KEY}`
-                                    };
-
-                                    var raw = JSON.stringify({
-                                        "accumulate_points": {
-                                            "points": 29
-                                        },
-                                        "idempotency_key": idempotency_key,
-                                        "location_id": location_id
-                                    });
-
-                                    var requestOptions = {
-                                        method: 'POST',
-                                        headers: myHeaders,
-                                        body: raw
-                                    };
-
-                                    fetch(`https://connect.squareupsandbox.com/v2/loyalty/accounts/${account_id}/accumulate`, requestOptions)
-                                        .then(response => response.text())
-                                        .then(result => {
-                                            console.log(result)
-                                            res.statusCode = 200;
-                                            res.setHeader('Content-Type', 'text/plain');
-                                            res.end("29 points accumulated");
-                                        })
-                                        .catch(err => {
-                                            res.statusCode = 500
-                                            res.end(`there was a problem with points accumulation due to the following error: ${err}`)
-                                        });
+                                    console.log(result)
+                                    res.statusCode = 200;
+                                    res.setHeader('Content-Type', 'text/plain');
+                                    res.end("29 points accumulated");
                                 })
+                                .catch(err => {
+                                    res.statusCode = 500
+                                    res.end(`there was a problem with points accumulation due to the following error: ${err}`)
+                                });
                         }
                     })
                     .catch(err => {
