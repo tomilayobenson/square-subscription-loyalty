@@ -79,7 +79,7 @@ updatedRouter.route('/')
                                                                 console.log('customer added to group')
                                                                 res.statusCode = 200;
                                                                 res.setHeader('Content-Type', 'text/plain');
-                                                                res.end("29 points accumulated");
+                                                                res.end("35 points accumulated");
                                                             })
                                                             .catch(err => {
                                                                 res.statusCode = 500
@@ -115,7 +115,7 @@ updatedRouter.route('/')
                                             console.log('customer added to group')
                                             res.statusCode = 200;
                                             res.setHeader('Content-Type', 'text/plain');
-                                            res.end("29 points accumulated");
+                                            res.end("35 points accumulated");
                                         })
                                         .catch(err => {
                                             res.statusCode = 500
