@@ -29,6 +29,7 @@ updatedRouter.route('/')
             res.statusCode = 200;
             res.setHeader('Content-Type', 'text/plain');
             res.end("Not a subscription invoice");
+            return;
         }
         const subscription_id = req.body.data.object.invoice.subscription_id
         //check if subscription is a part of membership plan by retrieving subscription details
@@ -40,6 +41,7 @@ updatedRouter.route('/')
                     res.statusCode = 200;
                     res.setHeader('Content-Type', 'text/plain');
                     res.end("Not a membership program subscription");
+                    return;
                 }
                 //else check if customer has loyalty account
                 retrieveLoyaltyAccounts(customer_id)
