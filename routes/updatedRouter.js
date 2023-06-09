@@ -36,7 +36,8 @@ updatedRouter.route('/')
         retrieveSubscriptions(subscription_id)
             .then(result => {
                 //check if subscription plan is not the membership program
-                const customer_plan_id = result.subscription.plan_id
+                // const customer_plan_id = result.subscription.plan_id
+                const customer_plan_id = result.subscription.plan_variation_id
                 if (customer_plan_id !== subscription_plan_id) {
                     res.statusCode = 200;
                     res.setHeader('Content-Type', 'text/plain');

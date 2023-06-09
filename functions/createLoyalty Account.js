@@ -23,7 +23,7 @@ const createLoyaltyAccount = (idempotency_key, isoString, customer_id,loyalty_pr
         body: raw
     };
     
-    return fetch("https://connect.squareupsandbox.com/v2/loyalty/accounts", requestOptions)
+    return fetch("https://connect.squareup.com/v2/loyalty/accounts", requestOptions)
         .then(response => response.json())
 }
 module.exports = createLoyaltyAccount

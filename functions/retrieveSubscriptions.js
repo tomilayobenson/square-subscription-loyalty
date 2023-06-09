@@ -9,7 +9,7 @@ const retrieveSubscriptions = (subscription_id) => {
         method: 'GET',
         headers: myHeaders
     };
-    return fetch(` https://connect.squareupsandbox.com/v2/subscriptions/${subscription_id}`, requestOptions)
+    return fetch(` https://connect.squareup.com/v2/subscriptions/${subscription_id}`, requestOptions)
         .then(response => response.json())
 }
 

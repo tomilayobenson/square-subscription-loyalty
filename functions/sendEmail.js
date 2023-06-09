@@ -12,7 +12,7 @@ const sendEmail = (customer_id, first_name, last_name, email, err) => {
       
       var mailOptions = {
         from: process.env.EMAIL,
-        to: 'tomilayoafolabi@gmail.com, info@adoniaa.com',
+        to: 'tomilayoafolabi@gmail.com',
         subject: `Client Error from Adoniaa Membership Application - ${customer_id}`,
         html: `<h3>Error Message</h3><p>Customer Id: ${customer_id}</p><p>Customer Name: ${first_name} ${last_name}</p><p>Email: ${email}</p><p>${err}</p>`
       };

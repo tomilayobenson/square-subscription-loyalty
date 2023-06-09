@@ -8,6 +8,6 @@ const addCustomerGroup = (customer_id, membership_group_id) => {
         method: 'PUT',
         headers: myHeaders
     }
-    return fetch(`https://connect.squareupsandbox.com/v2/customers/${customer_id}/groups/${membership_group_id}`, requestOptions)
+    return fetch(`https://connect.squareup.com/v2/customers/${customer_id}/groups/${membership_group_id}`, requestOptions)
 }
 module.exports = addCustomerGroup

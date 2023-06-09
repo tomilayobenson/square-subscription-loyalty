@@ -19,7 +19,7 @@ const accumulateLoyaltyPoints = (idempotency_key, location_id, account_id) => {
         body: raw
     };
     
-    return fetch(`https://connect.squareupsandbox.com/v2/loyalty/accounts/${account_id}/accumulate`, requestOptions)
+    return fetch(`https://connect.squareup.com/v2/loyalty/accounts/${account_id}/accumulate`, requestOptions)
         .then(response => response.text())
 }
 module.exports = accumulateLoyaltyPoints

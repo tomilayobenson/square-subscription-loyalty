@@ -16,7 +16,7 @@ const retrieveLoyaltyAccounts = (customer_id) => {
         headers: myHeaders,
         body: raw
     };
-    return fetch("https://connect.squareupsandbox.com/v2/loyalty/accounts/search", requestOptions)
+    return fetch("https://connect.squareup.com/v2/loyalty/accounts/search", requestOptions)
         .then(response => response.json())
 }
 module.exports = retrieveLoyaltyAccounts
