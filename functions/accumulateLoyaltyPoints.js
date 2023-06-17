@@ -7,7 +7,7 @@ const accumulateLoyaltyPoints = (idempotency_key, location_id, account_id) => {
 
     var raw = JSON.stringify({
         "accumulate_points": {
-            "points": 35
+            "points": 29
         },
         "idempotency_key": idempotency_key,
         "location_id": location_id

@@ -97,7 +97,7 @@ createdRouter.route('/')
 
                                     var raw = JSON.stringify({
                                         "accumulate_points": {
-                                            "points": 35
+                                            "points": 29
                                         },
                                         "idempotency_key": idempotency_key,
                                         "location_id": location_id
@@ -115,7 +115,7 @@ createdRouter.route('/')
                                             console.log(result)
                                             res.statusCode = 200;
                                             res.setHeader('Content-Type', 'text/plain');
-                                            res.end("35 points accumulated");
+                                            res.end("29 points accumulated");
                                         })
                                         .catch(err => {
                                             res.statusCode = 500
@@ -139,7 +139,7 @@ createdRouter.route('/')
 
                     var raw = JSON.stringify({
                         "accumulate_points": {
-                            "points": 35
+                            "points": 29
                         },
                         "idempotency_key": idempotency_key,
                         "location_id": location_id
@@ -157,7 +157,7 @@ createdRouter.route('/')
                             console.log(result)
                             res.statusCode = 200;
                             res.setHeader('Content-Type', 'text/plain');
-                            res.end("35 points accumulated");
+                            res.end("29 points accumulated");
                         })
                         .catch(err => {
                             res.statusCode = 500
